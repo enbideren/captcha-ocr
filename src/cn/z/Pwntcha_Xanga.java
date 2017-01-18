@@ -55,6 +55,13 @@ public class Pwntcha_Xanga {
 	}
 
 	public static void main(String[] args) throws Exception {
+	    BufferedImage img1 = ImageIO.read(new File("E:\\workspace\\wk_engage\\ocr\\src\\ocr\\img1\\1.jpg"));
+        img1 = ImageUtil.filterContrast(img1);
+        img1 = fill_white_holes(img1);
+        img1 = ImageUtil.filterSmooth(img1);
+        img1 = ImageUtil.filterContrast(img1);
+        ImageIO.write(img1, "jpg", new File("E:\\workspace\\wk_engage\\ocr\\src\\ocr\\img1\\a11.jpg"));
+	    
 
 		final String fontFile = "img/xanga/x_freemonobold_32_az.bmp";
 		final HashMap<BufferedImage, FontGlyphs> fontMap = ImageUtil.loadFontFixed(fontFile,
@@ -74,7 +81,7 @@ public class Pwntcha_Xanga {
 			img = fill_white_holes(img);
 			img = ImageUtil.filterSmooth(img);
 			img = ImageUtil.filterContrast(img);
-
+			ImageIO.write(img, "jpg", new File("E:\\workspace\\wk_engage\\ocr\\src\\ocr\\img1\\z"+k+".jpg"));
 			int x, y;
 			int r;
 			int xmin, xmax, ymin, ymax, cur = 0;

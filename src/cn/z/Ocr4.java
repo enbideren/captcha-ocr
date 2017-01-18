@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 
+import com.google.common.collect.Maps;
 import com.jhlabs.image.ScaleFilter;
 
 import cn.z.svm.svm_predict;
@@ -24,7 +25,8 @@ public class Ocr4 {
 	private static String clazz = Ocr4.class.getSimpleName();
 	private static Map<BufferedImage, String> trainMap = null;
 	private static int whiteThreshold = 300;
-	private static boolean useSvm = true;
+	private static boolean useSvm = false;
+	private static Map<String, Long> count = Maps.newHashMap();
 
 	public static int getColorBright(int colorInt) {
 		final Color color = new Color(colorInt);
@@ -231,26 +233,36 @@ public class Ocr4 {
 		final Map<BufferedImage, String> map = loadTrainData();
 		String result = useSvm ? "svm_" : "";
 		for (final BufferedImage bi : listImg) {
-			result += getSingleCharOcr(bi, map);
+		    String rs = getSingleCharOcr(bi, map);
+			result += rs;
+			Long num = count.get(rs);
+			if (num == null) {
+                num = 0L;
+            }
+			num++;
+			count.put(rs, num);
+			ImageIO.write(bi, "jpg", new File("E:\\workspace\\wk_engage\\ocr\\src\\ocr\\imgtrain\\"+rs+"\\"+rs+"-"+num+".jpg"));
 		}
 		System.out.println(result);
-		ImageIO.write(img, "JPG", new File("result/" + clazz + "/" + result + ".jpg"));
+//		ImageIO.write(img, "JPG", new File("result/" + clazz + "/" + result + ".jpg"));
 		return result;
 	}
 
 	public static Map<BufferedImage, String> loadTrainData() throws Exception {
 		if (trainMap == null) {
 			final Map<BufferedImage, String> map = new HashMap<BufferedImage, String>();
-			final File dir = new File("train/" + clazz);
-			final File[] files = dir.listFiles(new FilenameFilter() {
-				@Override
-				public boolean accept(File dir, String name) {
-					return name.toLowerCase().endsWith(".jpg");
-				}
-			});
-			for (final File file : files) {
-				map.put(scaleImage(ImageIO.read(file)), file.getName().charAt(0) + "");
-			}
+			for (int i = 0; i < 10; i++) {
+			    final File dir = new File("train/" +i);
+			    final File[] files = dir.listFiles(new FilenameFilter() {
+			        @Override
+			        public boolean accept(File dir, String name) {
+			            return name.toLowerCase().endsWith(".jpg");
+			        }
+			    });
+			    for (final File file : files) {
+			        map.put(scaleImage(ImageIO.read(file)), file.getName().charAt(0) + "");
+			    }
+            }
 			trainMap = map;
 		}
 		return trainMap;
@@ -277,18 +289,27 @@ public class Ocr4 {
 	}
 
 	public static void main(String[] args) throws Exception {
+//	    final BufferedImage img = removeBackgroud("E:\\workspace\\wk_engage\\ocr\\src\\ocr\\img1\\1.jpg");
+//	    ImageIO.write(img, "jpg", new File("E:\\workspace\\wk_engage\\ocr\\src\\ocr\\img1\\a11.jpg"));
+	    for (int i = 300; i < 350; i++) {
+	        try {
+	            getAllOcr("E:\\workspace\\wk_engage\\ocr\\src\\ocr\\img\\"+i+".jpg");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 		// ---step1 downloadImage
 		// String url = "http://reg.keepc.com/getcode/getCode.php";
 		// 下载图片
 		// CommonUtil.downloadImage(url, clazz);
-		new File("img/" + clazz).mkdirs();
-		new File("train/" + clazz).mkdirs();
-		new File("result/" + clazz).mkdirs();
-		// 先删除result/ocr目录，开始识别
-		for (int i = 0; i < 30; ++i) {
-			final String text = getAllOcr("img/" + clazz + "/" + i + ".jpg");
-			System.out.println(i + ".jpg = " + text);
-		}
+//		new File("img/" + clazz).mkdirs();
+//		new File("train/" + clazz).mkdirs();
+//		new File("result/" + clazz).mkdirs();
+//		// 先删除result/ocr目录，开始识别
+//		for (int i = 0; i < 30; ++i) {
+//			final String text = getAllOcr("img/" + clazz + "/" + i + ".jpg");
+//			System.out.println(i + ".jpg = " + text);
+//		}
 
 		// CommonUtil.scaleTraindata(clazz, whiteThreshold);
 		// svm_train train = new svm_train();
